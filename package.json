@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/ksulli212/pointstorage#readme",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "express-handlebars": "^3.0.0",
     "nodemon": "^1.18.4"

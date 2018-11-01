@@ -18,11 +18,23 @@ app.get('/about', function(req, res){
 	res.render('about');
 });
 
-/*
+
 app.get('/account', function(req, res){
-	res.render('account');
+	res.render('account', { csrf: "CSRF token goes here" });
 });
-*/
+
+app.post("/process", function(req, res){
+   if(req.xhr || req.accepts("json,html")==="json"){
+   console.log(JSON.stringify(req.body));
+     res.send({
+        success: true
+        });
+        }
+  else{
+    res.redirect(303,"/welcome");
+   }
+});
+
 
 app.get('/storage', function(req, res){
 	res.render('storage',{
