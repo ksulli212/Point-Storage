@@ -18,11 +18,11 @@ app.get('/about', function(req, res){
 	res.render('about');
 });
 
-/*
+
 app.get('/account', function(req, res){
-	res.render('account');
+	res.render('account', { csrf: "CSRF token goes here" });
 });
-*/
+
 
 app.get('/storage', function(req, res){
 	res.render('storage',{
