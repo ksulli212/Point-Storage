@@ -25,7 +25,7 @@ app.get('/account', function(req, res){
 });
 app.post("/process", function(req, res){
    if(true || req.xhr || req.accepts("json,html")==="json"){
-   console.log(JSON.stringify(req.body));
+//   console.log(JSON.stringify(req.body));
      res.send({
         success: true
         });

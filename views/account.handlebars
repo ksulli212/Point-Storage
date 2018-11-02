@@ -1,7 +1,7 @@
 <h1>Login here.</h1>
 <div class="formContainer">
-    <form class="form-horizontal accountForm" role="form" 
-            action="/process?form=account" method="POST">
+    <form class="form-horizontal newsletterForm" role="form" 
+          action="/process?form=account"  method="POST">
         <input type="hidden" name="_csrf" value="{{csrf}}">
         <div class="form-group">
             <label for="fieldUserName" class="col-sm-2 control-label">UserName</label>
@@ -27,8 +27,8 @@
 
     <script>
         $(document).ready(function(){
-            $('.accountForm').on('login', function(evt){
-                evt.preventDefault();
+            $('.newsletterForm').on('submit', function(evt){
+		evt.preventDefault();
                 var action = $(this).attr('action');
                 var $container = $(this).closest('.formContainer');
                 $.ajax({
