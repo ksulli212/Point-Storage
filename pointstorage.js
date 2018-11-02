@@ -21,6 +21,18 @@ app.get('/about', function(req, res){
 
 app.get('/account', function(req, res){
 	res.render('account', { csrf: "CSRF token goes here" });
+
+});
+app.post("/process", function(req, res){
+   if(true || req.xhr || req.accepts("json,html")==="json"){
+   console.log(JSON.stringify(req.body));
+     res.send({
+        success: true
+        });
+        }
+  else{
+//    res.redirect(303,"/welcome");
+   }
 });
 
 
