@@ -1,7 +1,10 @@
+//dependecies
 var express = require("express");
+var sessions = require('express-session');
+var bodyParser = require('body-parser');
 
 var app = express();
-
+var session;
 // set up handlebars view engine
 var handlebars = require('express-handlebars')
 	.create({ defaultLayout:'main' });
@@ -10,6 +13,16 @@ app.set('view engine', 'handlebars');
 
 app.set("port", process.env.PORT || 3000);
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(sessions({
+  secret: 'cmps361supersecret',
+  resave: true,
+  saveUninitialized: false,
+	//	secret: credentials.cookieSecret,
+}));
+
+//routes
 app.get('/', function(req, res){
 	res.render('home');
 });
@@ -18,11 +31,47 @@ app.get('/about', function(req, res){
 	res.render('about');
 });
 
+//Set the session user name to whatever the user has added.
+app.post('/login',function(req,res){
+	req.session.username = req.body.username;
+	req.session.password = req.body.password;
+	console.log(req.session.username + ' logged in');
+	res.redirect('/login');
+});
+/*
+app.get('/',function(req,res){
+	// Check if an user is set in the session.
+	if(req.session.username) {
+	    res.redirect('/about');
+	}
+	else {
+	    res.render('/account');
+	}
+});
+*/
+app.get('/login',function(req,res){
+  if(req.session.username) {
+    res.send('<h1>Hello '+req.session.username+'</h1><a href="/logout">Logout</a>');
+    res.end();
+	} else {
+		res.send('<h1>Please login first.</h1><a href="/account">Login</a>');
+		res.end();
+	}
+});
+
+app.get('/logout',function(req,res){
+	// if the user logs out, destroy all of their individual session
+	// information
+	console.log(req.session.username + ' logged out');
+	req.session.destroy();
+	res.redirect('/account');
+});
 
 app.get('/account', function(req, res){
 	res.render('account', { csrf: "CSRF token goes here" });
-
 });
+
+/*
 app.post("/process", function(req, res){
    if(true || req.xhr || req.accepts("json,html")==="json"){
 //   console.log(JSON.stringify(req.body));
@@ -34,7 +83,7 @@ app.post("/process", function(req, res){
 //    res.redirect(303,"/welcome");
    }
 });
-
+*/
 
 app.get('/storage', function(req, res){
 	res.render('storage',{
