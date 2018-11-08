@@ -1,6 +1,6 @@
 //dependecies
 var express = require("express");
-var sessions = require('express-session');
+var session = require('express-session');
 var bodyParser = require('body-parser');
 
 var app = express();
@@ -15,7 +15,7 @@ app.set("port", process.env.PORT || 3000);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(sessions({
+app.use(session({
   secret: 'cmps361supersecret',
   resave: true,
   saveUninitialized: false,
