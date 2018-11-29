@@ -45,7 +45,7 @@ app.get('/',function(req,res){
 	    res.redirect('/about');
 	}
 	else {
-	    res.render('/account');
+	    res.render('account');
 	}
 });
 */
