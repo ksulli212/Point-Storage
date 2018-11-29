@@ -2,6 +2,9 @@
 var express = require("express");
 var session = require('express-session');
 var bodyParser = require('body-parser');
+var mysql = require("mysql");
+var credentials = require("./credentials");
+var qs = require("querystring");
 
 var app = express();
 var session;
@@ -22,6 +25,15 @@ app.use(session({
 	//	secret: credentials.cookieSecret,
 }));
 
+app.use(function(req, res, next){
+	// if there's a flash message, transfer
+	// it to the context, then clear it
+
+	res.locals.user = req.session.flash;
+	delete req.session.flash;
+	next();
+});
+
 //routes
 app.get('/', function(req, res){
 	res.render('home');
@@ -33,9 +45,13 @@ app.get('/about', function(req, res){
 
 //Set the session user name to whatever the user has added.
 app.post('/login',function(req,res){
-	req.session.username = req.body.username;
-	req.session.password = req.body.password;
-	console.log(req.session.username + ' logged in');
+//	req.session.username = req.body.username;
+//	req.session.password = req.body.password;
+	req.session.user = {
+		name: req.body.username,
+		password: req.body.password
+	};
+	console.log(req.session.user.name + ' logged in');
 	res.redirect('/login');
 });
 /*
@@ -50,8 +66,8 @@ app.get('/',function(req,res){
 });
 */
 app.get('/login',function(req,res){
-  if(req.session.username) {
-    res.send('<h1>Hello '+req.session.username+'</h1><a href="/logout">Logout</a>');
+  if(req.session.user.name) {
+    res.send('<h1>Hello '+req.session.user.name+'</h1><a href="/logout">Logout</a>');
     res.end();
 	} else {
 		res.send('<h1>Please login first.</h1><a href="/account">Login</a>');
@@ -62,7 +78,7 @@ app.get('/login',function(req,res){
 app.get('/logout',function(req,res){
 	// if the user logs out, destroy all of their individual session
 	// information
-	console.log(req.session.username + ' logged out');
+	console.log(req.session.user.name + ' logged out');
 	req.session.destroy();
 	res.redirect('/account');
 });
@@ -84,28 +100,118 @@ app.post("/process", function(req, res){
    }
 });
 */
+function sendResponse(req, res, data) {
+  res.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
+  res.end(JSON.stringify(data));
+}
 
-app.get('/storage', function(req, res){
-	res.render('storage',{
-		small: [
-			{ sSize: "5' x 5' x 8'", sDesc: "Up to 200 cubic feet of space", sRecm: "Boxes, small furniture, and miscellaneous items"},
-			{ sSize: "5' x 10' x 8'", sDesc: "Up to 400 cubic feet of space", sRecm: "Contents of a studio or small 1 bedroom apartment"},
-			{ sSize: "5' x 15' x 8'", sDesc: "Up to 600 cubic feet of space", sRecm: "Contents of a 1 bedroom apartment, or garage items"},
-    ],
-		medium:[
-			{ mSize: "10' x 10' x 8'", mDesc: "Up to 800 cubic feet of space", mRecm: "Contents of a 2 bedroom apartment, or household equipment"},
-			{ mSize: "10' x 15' x 8'", mDesc: "Up to 1,200 cubic feet of space", mRecm: "Contents of a 3 bedroom house or full apartment"},
-		],
-		large: [
-			{ lSize: "10' x 20' x 8'", lDesc: "Up to 1,600 cubic feet of space.", lRecm: "Contents of a 4 bedroom house or a full garage"},
-			{ lSize: "10' x 25' x 8'", lDesc: "Up to 2,000 cubic feet of space", lRecm: "Contents of a 4+ bedroom house or a large garage"},
-			{ lSize: "10' x 30' x 8'", lDesc: "Up to 2,400 cubic feet of space", lRecm: "Contents of a 5 bedroom house, large furniture & household equipment"},
-		],
-	});
+app.get('/storage', function(req, res) {
+  var conn = mysql.createConnection(credentials.connection);
+  // connect to database
+  conn.connect(function(err) {
+    if (err) {
+      console.error("ERROR: cannot connect: " + e);
+      return;
+    }
+    // query the database
+    conn.query("SELECT * FROM UNITS", function(err, rows, fields) {
+      // build json result object
+      var outjson = {};
+      if (err) {
+        // query failed
+        outjson.success = false;
+        outjson.message = "Query failed: " + err;
+      }
+      else {
+        // query successful
+        outjson.success = true;
+        outjson.message = "Query successful!";
+        outjson.data = rows;
+      }
+      // return json object that contains the result of the query
+      sendResponse(req, res, outjson);
+    });
+    conn.end();
+  });
 });
 
 // static pages
 app.use(express.static(__dirname + '/public'));
+
+function users(req, res) {
+  var conn = mysql.createConnection(credentials.connection);
+  // connect to database
+  conn.connect(function(err) {
+    if (err) {
+      console.error("ERROR: cannot connect: " + e);
+      return;
+    }
+		else
+		{
+		console.error("no ERROR");
+		}
+    // query the database
+    conn.query("SELECT * FROM UNITS", function(err, rows, fields) {
+      // build json result object
+      var outjson = {};
+      if (err) {
+        // query failed
+        outjson.success = false;
+        outjson.message = "Query failed: " + err;
+      }
+      else {
+        // query successful
+        outjson.success = true;
+        outjson.message = "Query successful!";
+        outjson.data = rows;
+      }
+      // return json object that contains the result of the query
+      res.send(req, res, outjson);
+    });
+    conn.end();
+  });
+}
+
+function addUser(req, res) {
+  var body = "";
+  req.on("data", function (data) {
+    body += data;
+    // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+    if (body.length > 1e6) {
+      // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+      req.connection.destroy();
+    }
+  });
+  req.on("end", function () {
+    var injson = JSON.parse(body);
+    var conn = mysql.createConnection(credentials.connection);
+    // connect to database
+    conn.connect(function(err) {
+      if (err) {
+        console.error("ERROR: cannot connect: " + e);
+        return;
+      }
+      // query the database
+      conn.query("INSERT INTO USERS (NAME) VALUE (?)", [injson.name], function(err, rows, fields) {
+        // build json result object
+        var outjson = {};
+        if (err) {
+          // query failed
+          outjson.success = false;
+          outjson.message = "Query failed: " + err;
+        }
+        else {
+          // query successful
+          outjson.success = true;
+          outjson.message = "Query successful!";
+        }
+        // return json object that contains the result of the query
+        res.send(req, res, outjson);
+      });
+      conn.end();
+    });
+  });
+}
 
 // 404 catch-all handler (middleware)
 app.use(function(req, res, next){
