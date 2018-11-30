@@ -129,7 +129,9 @@ app.get('/storage', function(req, res) {
         outjson.data = rows;
       }
       // return json object that contains the result of the query
-      sendResponse(req, res, outjson);
+    //  sendResponse(req, res, outjson);
+	  	res.render('storage', { storage: outjson });
+
     });
     conn.end();
   });
@@ -138,40 +140,7 @@ app.get('/storage', function(req, res) {
 // static pages
 app.use(express.static(__dirname + '/public'));
 
-function users(req, res) {
-  var conn = mysql.createConnection(credentials.connection);
-  // connect to database
-  conn.connect(function(err) {
-    if (err) {
-      console.error("ERROR: cannot connect: " + e);
-      return;
-    }
-		else
-		{
-		console.error("no ERROR");
-		}
-    // query the database
-    conn.query("SELECT * FROM UNITS", function(err, rows, fields) {
-      // build json result object
-      var outjson = {};
-      if (err) {
-        // query failed
-        outjson.success = false;
-        outjson.message = "Query failed: " + err;
-      }
-      else {
-        // query successful
-        outjson.success = true;
-        outjson.message = "Query successful!";
-        outjson.data = rows;
-      }
-      // return json object that contains the result of the query
-      res.send(req, res, outjson);
-    });
-    conn.end();
-  });
-}
-
+/*
 function addUser(req, res) {
   var body = "";
   req.on("data", function (data) {
@@ -212,6 +181,7 @@ function addUser(req, res) {
     });
   });
 }
+*/
 
 // 404 catch-all handler (middleware)
 app.use(function(req, res, next){
