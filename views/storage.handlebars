@@ -21,6 +21,21 @@ tr:nth-child(even) {
 }
 
 </style>
+<h3>Storage Units</h3>
+<table>
+     <tr>
+       <th>Unit Size</th>
+       <th>Description</th>
+       <th>Recommended Contents</th>
+     </tr>
+    {{#each storage.data}}
+     <tr>
+       <td>{{UnitSize}}</td>
+       <td>{{Description}}</td>
+       <td>{{sRecm}}</td>
+     </tr>
+    {{/each}}
+</table>
 
 <h3>Small Storage Units</h3>
 <table>
@@ -69,4 +84,3 @@ tr:nth-child(even) {
      </tr>
     {{/each}}
 </table>
-
