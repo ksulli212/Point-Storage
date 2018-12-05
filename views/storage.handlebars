@@ -24,19 +24,21 @@ tr:nth-child(even) {
 <h3>Storage Units</h3>
 <table>
      <tr>
+       <th>Category</th>
        <th>Unit Size</th>
        <th>Description</th>
-       <th>Recommended Contents</th>
+       <th>Price</th>
      </tr>
     {{#each storage.data}}
      <tr>
+       <td>{{Category}}</td>
        <td>{{UnitSize}}</td>
        <td>{{Description}}</td>
-       <td>{{sRecm}}</td>
+       <td>{{Price}}</td>
      </tr>
     {{/each}}
 </table>
-
+<!--
 <h3>Small Storage Units</h3>
 <table>
      <tr>
