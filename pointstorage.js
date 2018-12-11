@@ -45,13 +45,13 @@ app.get('/about', function(req, res){
 
 //Set the session user name to whatever the user has added.
 app.post('/login',function(req,res){
-//	req.session.username = req.body.username;
-//	req.session.password = req.body.password;
+	req.session.username = req.body.username;
+	req.session.password = req.body.password;
 	req.session.user = {
 		name: req.body.username,
 		password: req.body.password
 	};
-	console.log(req.session.user.name + ' logged in');
+	console.log(req.session.username + ' logged in');
 	res.redirect('/login');
 });
 /*
@@ -66,8 +66,8 @@ app.get('/',function(req,res){
 });
 */
 app.get('/login',function(req,res){
-  if(req.session.user.name) {
-    res.send('<h1>Hello '+req.session.user.name+'</h1><a href="/logout">Logout</a>');
+  if(req.session.username) {
+    res.send('<h1>Hello '+req.session.username+'</h1><a href="/logout">Logout</a>');
     res.end();
 	} else {
 		res.send('<h1>Please login first.</h1><a href="/account">Login</a>');
@@ -78,7 +78,7 @@ app.get('/login',function(req,res){
 app.get('/logout',function(req,res){
 	// if the user logs out, destroy all of their individual session
 	// information
-	console.log(req.session.user.name + ' logged out');
+	console.log(req.session.username + ' logged out');
 	req.session.destroy();
 	res.redirect('/account');
 });
