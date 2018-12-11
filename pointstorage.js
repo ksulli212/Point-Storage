@@ -54,7 +54,7 @@ app.post('/login',function(req,res){
 	console.log(req.session.user.name + ' logged in');
 	res.redirect('/login');
 });
-/*
+
 app.get('/login',function(req,res){
   if(req.session.user.name) {
 		res.render('home');
