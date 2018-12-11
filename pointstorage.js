@@ -67,7 +67,7 @@ app.get('/login', function(req, res) {
     }
     // query the database
 
-    conn.query("SELECT * FROM CUSTOMER WHERE FirstName = ? ", [injson], function(err, rows, fields) {
+    conn.query("SELECT * FROM Customer WHERE FirstName = ? ", [injson], function(err, rows, fields) {
       // build json result object
       var outjson = {};
       if (err) {
@@ -131,7 +131,7 @@ app.get('/storage', function(req, res) {
       return;
     }
     // query the database
-    conn.query("SELECT * FROM UNITS", function(err, rows, fields) {
+    conn.query("SELECT * FROM Units", function(err, rows, fields) {
       // build json result object
       var outjson = {};
       if (err) {
