@@ -30,7 +30,7 @@ app.use(function(req, res, next){
 	// it to the context, then clear it
 
 	res.locals.user = req.session.flash;
-	delete req.session.flash;
+	//delete req.session.flash;
 	next();
 });
 
@@ -54,25 +54,54 @@ app.post('/login',function(req,res){
 	console.log(req.session.user.name + ' logged in');
 	res.redirect('/login');
 });
-/*
-app.get('/',function(req,res){
-	// Check if an user is set in the session.
-	if(req.session.username) {
-	    res.redirect('/about');
-	}
-	else {
-	    res.render('account');
-	}
-});
-*/
+
 app.get('/login',function(req,res){
   if(req.session.user.name) {
-    res.send('<h1>Hello '+req.session.user.name+'</h1><a href="/logout">Logout</a>');
-    res.end();
+		res.render('home');
+//    res.send('<h1>Hello '+req.session.user.name+'</h1><a href="/logout">Logout</a>');
+//    res.end();
 	} else {
 		res.send('<h1>Please login first.</h1><a href="/account">Login</a>');
 		res.end();
 	}
+});
+*/
+
+app.get('/login', function(req, res) {
+	if(req.session.user.name) {
+  var conn = mysql.createConnection(credentials.connection);
+	var injson = req.session.user.name;
+  // connect to database
+  conn.connect(function(err) {
+    if (err) {
+      console.error("ERROR: cannot connect: " + e);
+      return;
+    }
+    // query the database
+
+    conn.query("SELECT * FROM CUSTOMER WHERE FirstName = ? ", [injson], function(err, rows, fields) {
+      // build json result object
+      var outjson = {};
+      if (err) {
+        // query failed
+        outjson.success = false;
+        outjson.message = "Query failed: " + err;
+      }
+      else {
+        // query successful
+        outjson.success = true;
+        outjson.message = "Logged in as: " + injson;
+        outjson.data = rows;
+				console.log(rows);
+      }
+      // return json object that contains the result of the query
+    //  sendResponse(req, res, outjson);
+	  	res.render('login', { login: outjson });
+
+    });
+    conn.end();
+  });
+ }
 });
 
 app.get('/logout',function(req,res){
@@ -140,7 +169,7 @@ app.get('/storage', function(req, res) {
 // static pages
 app.use(express.static(__dirname + '/public'));
 
-/*
+
 function addUser(req, res) {
   var body = "";
   req.on("data", function (data) {
@@ -181,7 +210,7 @@ function addUser(req, res) {
     });
   });
 }
-*/
+
 
 // 404 catch-all handler (middleware)
 app.use(function(req, res, next){

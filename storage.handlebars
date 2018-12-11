@@ -1,0 +1,88 @@
+
+<style>
+h3 {
+  text-align: center;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    font-size: 12px;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+</style>
+<h3>Storage Units</h3>
+<table>
+     <tr>
+       <th>Category</th>
+       <th>Unit Size</th>
+       <th>Description</th>
+       <th>Price</th>
+     </tr>
+    {{#each storage}}
+     <tr>
+       <td>{{Category}}</td>
+       <td>{{UnitSize}}</td>
+       <td>{{Description}}</td>
+       <td>{{Price}}</td>
+     </tr>
+    {{/each}}
+</table>
+<!--
+<h3>Small Storage Units</h3>
+<table>
+     <tr>
+       <th>Unit Size</th>
+       <th>Description</th>
+       <th>Recommended Contents</th>
+     </tr>
+    {{#each small}}
+     <tr>
+       <td>{{sSize}}</td>
+       <td>{{sDesc}}</td>
+       <td>{{sRecm}}</td>
+     </tr>
+    {{/each}}
+</table>
+
+<h3>Medium Storage Units</h3>
+<table>
+     <tr>
+       <th>Unit Size</th>
+       <th>Description</th>
+       <th>Recommended Contents</th>
+     </tr>
+    {{#each medium}}
+     <tr>
+       <td>{{mSize}}</td>
+       <td>{{mDesc}}</td>
+       <td>{{mRecm}}</td>
+     </tr>
+    {{/each}}
+</table>
+
+<h3>Large Storage Units</h3>
+<table>
+     <tr>
+       <th>Unit Size</th>
+       <th>Description</th>
+       <th>Recommended Contents</th>
+     </tr>
+    {{#each large}}
+     <tr>
+       <td>{{lSize}}</td>
+       <td>{{lDesc}}</td>
+       <td>{{lRecm}}</td>
+     </tr>
+    {{/each}}
+</table>
