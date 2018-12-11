@@ -30,7 +30,7 @@ app.use(function(req, res, next){
 	// it to the context, then clear it
 
 	res.locals.user = req.session.flash;
-	delete req.session.flash;
+	//delete req.session.flash;
 	next();
 });
 
@@ -45,40 +45,57 @@ app.get('/about', function(req, res){
 
 //Set the session user name to whatever the user has added.
 app.post('/login',function(req,res){
-	req.session.username = req.body.username;
-	req.session.password = req.body.password;
+//	req.session.username = req.body.username;
+//	req.session.password = req.body.password;
 	req.session.user = {
 		name: req.body.username,
 		password: req.body.password
 	};
-	console.log(req.session.username + ' logged in');
+	console.log(req.session.user.name + ' logged in');
 	res.redirect('/login');
 });
-/*
-app.get('/',function(req,res){
-	// Check if an user is set in the session.
-	if(req.session.username) {
-	    res.redirect('/about');
-	}
-	else {
-	    res.render('account');
-	}
-});
-*/
-app.get('/login',function(req,res){
-  if(req.session.username) {
-    res.send('<h1>Hello '+req.session.username+'</h1><a href="/logout">Logout</a>');
-    res.end();
-	} else {
-		res.send('<h1>Please login first.</h1><a href="/account">Login</a>');
-		res.end();
-	}
+
+app.get('/login', function(req, res) {
+	if(req.session.user.name) {
+  var conn = mysql.createConnection(credentials.connection);
+	var injson = req.session.user.name;
+  // connect to database
+  conn.connect(function(err) {
+    if (err) {
+      console.error("ERROR: cannot connect: " + e);
+      return;
+    }
+    // query the database
+
+    conn.query("SELECT * FROM CUSTOMER WHERE FirstName = ? ", [injson], function(err, rows, fields) {
+      // build json result object
+      var outjson = {};
+      if (err) {
+        // query failed
+        outjson.success = false;
+        outjson.message = "Query failed: " + err;
+      }
+      else {
+        // query successful
+        outjson.success = true;
+        outjson.message = "Logged in as: " + injson;
+        outjson.data = rows;
+				console.log(rows);
+      }
+      // return json object that contains the result of the query
+    //  sendResponse(req, res, outjson);
+	  	res.render('login', { login: outjson });
+
+    });
+    conn.end();
+  });
+ }
 });
 
 app.get('/logout',function(req,res){
 	// if the user logs out, destroy all of their individual session
 	// information
-	console.log(req.session.username + ' logged out');
+	console.log(req.session.user.name + ' logged out');
 	req.session.destroy();
 	res.redirect('/account');
 });
@@ -140,7 +157,7 @@ app.get('/storage', function(req, res) {
 // static pages
 app.use(express.static(__dirname + '/public'));
 
-/*
+
 function addUser(req, res) {
   var body = "";
   req.on("data", function (data) {
@@ -181,7 +198,7 @@ function addUser(req, res) {
     });
   });
 }
-*/
+
 
 // 404 catch-all handler (middleware)
 app.use(function(req, res, next){
