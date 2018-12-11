@@ -55,18 +55,6 @@ app.post('/login',function(req,res){
 	res.redirect('/login');
 });
 
-app.get('/login',function(req,res){
-  if(req.session.user.name) {
-		res.render('home');
-//    res.send('<h1>Hello '+req.session.user.name+'</h1><a href="/logout">Logout</a>');
-//    res.end();
-	} else {
-		res.send('<h1>Please login first.</h1><a href="/account">Login</a>');
-		res.end();
-	}
-});
-*/
-
 app.get('/login', function(req, res) {
 	if(req.session.user.name) {
   var conn = mysql.createConnection(credentials.connection);
