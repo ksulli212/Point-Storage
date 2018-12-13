@@ -1,9 +1,8 @@
 //dependecies
 var express = require("express");
 var session = require('express-session');
-var bodyParser = require('body-parser');
 var mysql = require("mysql");
-var credentials = require("./credentials");
+var credentials = require("./credentials.js");
 var qs = require("querystring");
 
 var app = express();
@@ -16,49 +15,53 @@ app.set('view engine', 'handlebars');
 
 app.set("port", process.env.PORT || 3000);
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.static(__dirname + '/public'));
+app.use(require('body-parser').urlencoded({ extended: true }));
+app.use(require('cookie-parser')(credentials.cookieSecret));
 app.use(session({
-  secret: 'cmps361supersecret',
-  resave: true,
+//secret: 'cmps361supersecret',
+  resave: false,
   saveUninitialized: false,
-	//	secret: credentials.cookieSecret,
+	secret: credentials.cookieSecret,
 }));
 
 app.use(function(req, res, next){
 	// if there's a flash message, transfer
 	// it to the context, then clear it
-
-	res.locals.user = req.session.flash;
+	res.locals.flash = req.session.flash;
 	//delete req.session.flash;
 	next();
 });
 
 //routes
 app.get('/', function(req, res){
-	res.render('home');
+	// If session exists, redirect to...
+	if(req.session.user) {
+		res.redirect('/login');
+	}
+ // IF not, stay in the home page
+	else {
+		res.render('home');
+	}
 });
 
-app.get('/about', function(req, res){
-	res.render('about');
-});
+var counter = 0;
 
-//Set the session user name to whatever the user has added.
+//Set the login session
 app.post('/login',function(req,res){
-//	req.session.username = req.body.username;
-//	req.session.password = req.body.password;
 	req.session.user = {
 		name: req.body.username,
 		password: req.body.password
 	};
-	console.log(req.session.user.name + ' logged in');
 	res.redirect('/login');
 });
 
 app.get('/login', function(req, res) {
-	if(req.session.user.name) {
-  var conn = mysql.createConnection(credentials.connection);
+
+	var conn = mysql.createConnection(credentials.connection);
+
 	var injson = req.session.user.name;
+
   // connect to database
   conn.connect(function(err) {
     if (err) {
@@ -80,7 +83,8 @@ app.get('/login', function(req, res) {
         outjson.success = true;
         outjson.message = "Logged in as: " + injson;
         outjson.data = rows;
-				console.log(rows);
+				counter += 1;
+				console.log(req.session.user.name + ' logged in.   ' + counter + ' Users logged in.');
       }
       // return json object that contains the result of the query
     //  sendResponse(req, res, outjson);
@@ -89,38 +93,27 @@ app.get('/login', function(req, res) {
     });
     conn.end();
   });
- }
+});
+
+app.get('/account', function(req, res){
+	// If session exists, keep user in their profile page...login.handlebars
+	if(req.session.user) {
+		res.redirect('/login');
+	}
+ // If not, render login page...account.hadlerbars
+	else {
+		res.render('account');
+	}
 });
 
 app.get('/logout',function(req,res){
 	// if the user logs out, destroy all of their individual session
 	// information
-	console.log(req.session.user.name + ' logged out');
+	counter -= 1;
+	console.log(req.session.user.name + ' logged out.  ' + counter + ' Users logged in.');
 	req.session.destroy();
 	res.redirect('/account');
 });
-
-app.get('/account', function(req, res){
-	res.render('account', { csrf: "CSRF token goes here" });
-});
-
-/*
-app.post("/process", function(req, res){
-   if(true || req.xhr || req.accepts("json,html")==="json"){
-//   console.log(JSON.stringify(req.body));
-     res.send({
-        success: true
-        });
-        }
-  else{
-//    res.redirect(303,"/welcome");
-   }
-});
-*/
-function sendResponse(req, res, data) {
-  res.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
-  res.end(JSON.stringify(data));
-}
 
 app.get('/storage', function(req, res) {
   var conn = mysql.createConnection(credentials.connection);
@@ -154,50 +147,57 @@ app.get('/storage', function(req, res) {
   });
 });
 
-// static pages
-app.use(express.static(__dirname + '/public'));
 
+app.get('/register', function(req, res) {
+	if(req.session.user) {
+		res.redirect('/login');
+	}
+ // If not, render login page...account.hadlerbars
+	else {
+		res.render('register');
+	}
+});
 
-function addUser(req, res) {
-  var body = "";
-  req.on("data", function (data) {
-    body += data;
-    // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-    if (body.length > 1e6) {
-      // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
-      req.connection.destroy();
+app.post('/register', function (req, res) {
+
+	var conn = mysql.createConnection(credentials.connection);
+
+  var injson = {
+		"FirstName": req.body.firstname,
+		"LastName":  req.body.lastname,
+		"Address":  req.body.address,
+		"City":  req.body.city,
+		"State":  req.body.state,
+		"Zip":  req.body.zip,
+		"Phone":  req.body.phone
+	}
+
+  // connect to database
+  conn.connect(function(err) {
+    if (err) {
+      console.error("ERROR: cannot connect: " + e);
+      return;
     }
-  });
-  req.on("end", function () {
-    var injson = JSON.parse(body);
-    var conn = mysql.createConnection(credentials.connection);
-    // connect to database
-    conn.connect(function(err) {
+    // query the database
+    conn.query("INSERT INTO Customer SET ?", injson, function(err, rows, fields) {
+      // build json result object
+      var outjson = {};
       if (err) {
-        console.error("ERROR: cannot connect: " + e);
-        return;
+        // query failed
+        outjson.success = false;
+        outjson.message = "Query failed: " + err;
       }
-      // query the database
-      conn.query("INSERT INTO USERS (NAME) VALUE (?)", [injson.name], function(err, rows, fields) {
-        // build json result object
-        var outjson = {};
-        if (err) {
-          // query failed
-          outjson.success = false;
-          outjson.message = "Query failed: " + err;
-        }
-        else {
-          // query successful
-          outjson.success = true;
-          outjson.message = "Query successful!";
-        }
-        // return json object that contains the result of the query
-        res.send(req, res, outjson);
-      });
-      conn.end();
+      else {
+        // query successful
+        outjson.success = true;
+        outjson.message = "Query successful!";
+      }
+      // return json object that contains the result of the query
+      res.redirect('/account');
     });
+    conn.end();
   });
-}
+});
 
 
 // 404 catch-all handler (middleware)
