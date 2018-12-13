@@ -37,7 +37,7 @@ app.use(function(req, res, next){
 app.get('/', function(req, res){
 	// If session exists, redirect to...
 	if(req.session.user) {
-		res.redirect('/login');
+		res.redirect('/storage');
 	}
  // IF not, stay in the home page
 	else {
