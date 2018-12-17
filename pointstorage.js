@@ -19,7 +19,6 @@ app.use(express.static(__dirname + '/public'));
 app.use(require('body-parser').urlencoded({ extended: true }));
 app.use(require('cookie-parser')(credentials.cookieSecret));
 app.use(session({
-//secret: 'cmps361supersecret',
   resave: false,
   saveUninitialized: false,
 	secret: credentials.cookieSecret,
@@ -28,7 +27,8 @@ app.use(session({
 app.use(function(req, res, next){
 	// if there's a flash message, transfer
 	// it to the context, then clear it
-	res.locals.flash = req.session.flash;
+	res.locals.user = req.session.user;
+	res.locals.counter = counter;
 	//delete req.session.flash;
 	next();
 });
@@ -88,8 +88,7 @@ app.get('/login', function(req, res) {
       }
       // return json object that contains the result of the query
     //  sendResponse(req, res, outjson);
-	  	res.render('login', { login: outjson });
-
+	  	res.render('login', { login: outjson, counter: counter, user: injson });
     });
     conn.end();
   });
@@ -164,12 +163,12 @@ app.post('/register', function (req, res) {
 
   var injson = {
 		"FirstName": req.body.firstname,
-		"LastName":  req.body.lastname,
-		"Address":  req.body.address,
-		"City":  req.body.city,
-		"State":  req.body.state,
-		"Zip":  req.body.zip,
-		"Phone":  req.body.phone
+		 "LastName": req.body.lastname,
+		  "Address": req.body.address,
+			   "City": req.body.city,
+		    "State": req.body.state,
+		      "Zip": req.body.zip,
+		    "Phone": req.body.phone
 	}
 
   // connect to database
