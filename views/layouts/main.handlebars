@@ -59,6 +59,7 @@
 </style>
 </head>
 <body>
+
 	<!-- Bootstrap's alert messages to display flash messages -->
 {{#if flash}}
         <div class="alert alert-dismissible alert-{{flash.type}}">
@@ -70,7 +71,9 @@
 
 <header>
  <div class="navbar">
-  <ul>
+	 <br>
+  <p>Number of users logged in: {{counter}}  Logged in as: {{user}}</p>
+	<ul>
 		<h1>Point Storage</h1>
 		<li><a href="/">Home</a></li>
 		<li><a href="/storage">Storage Options</a></li>
@@ -78,7 +81,6 @@
 		<li><a href="/register">Register</a></li>
   </ul>
  </div>
- 	<!--	 <p id='logins'>Users logged in: {{login.counter}}</p> -->
  </header>
 
 	{{{body}}}
